@@ -13,6 +13,12 @@ VERBOSE_LOGGING=false
 LOCK_FILE="./monitor.pid"
 LOG_FILE="./monitor.log"
 
+# ────────────────────────────────────────────────
+# Notification settings
+NOTIF_ID=7421                  # Fixed ID → allows updating the same notification
+NOTIF_GROUP="tbp_status"       # Optional: groups it if you want
+# ────────────────────────────────────────────────
+
 ########################################
 # Singleton protection
 ########################################
@@ -27,10 +33,12 @@ echo $$ > "$LOCK_FILE"
 
 cleanup() {
     echo "$(date '+%F %T') | Shutting down monitor." >> "$LOG_FILE"
+    # Optional: remove notification on exit (comment out if you want it to stay)
+    termux-notification-remove "$NOTIF_ID" 2>/dev/null
     rm -f "$LOCK_FILE"
     exit 0
 }
-trap cleanup INT TERM
+trap cleanup INT TERM EXIT
 
 ########################################
 # Startup log
@@ -39,6 +47,7 @@ echo "========================================" >> "$LOG_FILE"
 echo "$(date '+%F %T') | Monitor started." >> "$LOG_FILE"
 echo "Enable >= $ENABLE_THRESHOLD | Disable <= $DISABLE_THRESHOLD" >> "$LOG_FILE"
 echo "Check interval: $INTERVAL seconds" >> "$LOG_FILE"
+echo "Notification ID: $NOTIF_ID" >> "$LOG_FILE"
 echo "========================================" >> "$LOG_FILE"
 
 LAST_TOGGLE_TIME=0
@@ -52,7 +61,7 @@ shizuku_running() {
 }
 
 ########################################
-# Generic 10‑attempt reader
+# Generic 10-attempt reader
 ########################################
 retry_read() {
     local cmd="$1"
@@ -80,6 +89,32 @@ retry_read() {
 }
 
 ########################################
+# Update notification function
+########################################
+update_notification() {
+    local battery="$1"
+    local state="$2"   # 1 = bypass active, 0 = normal
+
+    if [ "$state" -eq 1 ]; then
+        local title="USB PD Bypass Active"
+        local mode="Bypass Mode"
+    else
+        local title="USB PD Bypass Disabled"
+        local mode="Normal Mode"
+    fi
+
+    termux-notification \
+        --id "$NOTIF_ID" \
+        --title "$title" \
+        --content "Battery ${battery}% (${mode})" \
+        --ongoing \
+        --group "$NOTIF_GROUP" 2>/dev/null
+
+    # Optional: log it
+    echo "$(date '+%F %T') | Notification updated: $title - Battery ${battery}% (${mode})" >> "$LOG_FILE"
+}
+
+########################################
 # Main loop
 ########################################
 while true; do
@@ -87,6 +122,12 @@ while true; do
 
     if ! shizuku_running; then
         echo "$TIMESTAMP | WARNING: Shizuku not running. Skipping cycle." >> "$LOG_FILE"
+        # Optional: show warning in notification too
+        termux-notification \
+            --id "$NOTIF_ID" \
+            --title "USB PD Bypass Monitor" \
+            --content "Shizuku not running – monitoring paused" \
+            --ongoing 2>/dev/null
         sleep "$INTERVAL"
         continue
     fi
@@ -112,6 +153,13 @@ while true; do
     elif [ "$BATTERY" -le "$DISABLE_THRESHOLD" ]; then
         DESIRED=0
     else
+        # Still update notification even if no change needed
+        CURRENT_STATE=$(retry_read "settings get system pass_through" || echo "unknown")
+        if [ "$CURRENT_STATE" = "1" ]; then
+            update_notification "$BATTERY" 1
+        else
+            update_notification "$BATTERY" 0
+        fi
         sleep "$INTERVAL"
         continue
     fi
@@ -120,6 +168,8 @@ while true; do
     ELAPSED=$((CURRENT_TIME - LAST_TOGGLE_TIME))
 
     if [ "$ELAPSED" -lt "$MIN_STATE_SECONDS" ]; then
+        # Still update notification periodically
+        update_notification "$BATTERY" "$DESIRED"
         sleep "$INTERVAL"
         continue
     fi
@@ -133,6 +183,7 @@ while true; do
         echo "$TIMESTAMP | WARNING: Could not read pass_through. Applying expected state=$DESIRED" >> "$LOG_FILE"
         $RISH -c "settings put system pass_through $DESIRED" >/dev/null 2>&1
         LAST_TOGGLE_TIME=$CURRENT_TIME
+        update_notification "$BATTERY" "$DESIRED"
         sleep "$INTERVAL"
         continue
     fi
@@ -147,6 +198,9 @@ while true; do
     else
         $VERBOSE_LOGGING && echo "$TIMESTAMP | [VERBOSE] pass_through already $CURRENT_STATE — no change" >> "$LOG_FILE"
     fi
+
+    # Always update notification at end of cycle
+    update_notification "$BATTERY" "$DESIRED"
 
     sleep "$INTERVAL"
 done
