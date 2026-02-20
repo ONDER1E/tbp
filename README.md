@@ -79,7 +79,7 @@ Typically available inside Game Booster / Game Launcher.
 
 Examples include:
 
-* Galaxy S245-S21 series
+* Galaxy S25-S21 series
 * Galaxy Z Fold 4 / 5
 * Galaxy Z Flip 4 / 5
 * Galaxy A33 / A53 / A73
