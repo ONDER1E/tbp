@@ -71,7 +71,6 @@ Bypass charging is an OEM-specific feature. There is **no universal Android stan
 ## Known Device Families With Bypass Charging Support
 
 Support depends on software version and charger capability (USB-PD with PPS is often required).
-Some device brands may imlpement their own service to control USB PD battery bypass already, e.g: Samsung GOC which may interfere with the bypass state, disabiling such services is ideal however may remove some safety features such as thermal protection.
 
 ### Samsung (Pause USB Power Delivery)
 
@@ -112,7 +111,7 @@ Some devices from:
 
 ## Important Notes
 
-* Some OEMs only enable bypass while gaming.
+* Some OEMs only enable bypass while gaming or may imlpement their own service to control USB PD battery bypass already, e.g: Samsung GOC which may interfere with the bypass state, disabiling such services is ideal however may remove some safety features such as thermal protection.
 * Some devices hide the setting unless a compatible PD/PPS charger is connected.
 * Some devices may expose the setting but ignore writes.
 * If `settings get system pass_through` fails, the script assumes the expected state and writes it.
