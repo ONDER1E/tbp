@@ -71,6 +71,7 @@ Bypass charging is an OEM-specific feature. There is **no universal Android stan
 ## Known Device Families With Bypass Charging Support
 
 Support depends on software version and charger capability (USB-PD with PPS is often required).
+Some device brands may imlpement their own service to control USB PD battery bypass already, e.g: Samsung GOC which may interfere with the bypass state, disabiling such services is ideal however may remove some safety features such as thermal protection.
 
 ### Samsung (Pause USB Power Delivery)
 
@@ -78,9 +79,7 @@ Typically available inside Game Booster / Game Launcher.
 
 Examples include:
 
-* Galaxy S23 series
-* Galaxy S22 series
-* Galaxy S21 series
+* Galaxy S245-S21 series
 * Galaxy Z Fold 4 / 5
 * Galaxy Z Flip 4 / 5
 * Galaxy A33 / A53 / A73
