@@ -33,6 +33,7 @@ Each loop cycle:
 - Android device
 - Termux
 - Shizuku (running and authorized)
+- The rish folder and rish_shizuku.dex file be in ~/
 - USB-PD charger (PPS recommended for most devices)
 - Device that supports bypass charging
 
@@ -42,6 +43,8 @@ Each loop cycle:
 git clone https://github.com/ONDER1E/tbp.git
 cd tbp
 chmod +x tbp.sh
+chmod +x open_shizuku.sh
+chmod +x exit_helper.sh
 ./tbp.sh
 ```
 
