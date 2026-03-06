@@ -15,6 +15,7 @@ This is intended for devices that support bypass charging (a.k.a. pause USB Powe
 - Verbose logging for debugging
 - Configurable thresholds
 - Designed for Termux environments
+- You can end the script via the persistent notification or open Shizuku if it's not running
 
 ## How It Works
 
