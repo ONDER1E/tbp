@@ -45,7 +45,7 @@ git clone https://github.com/ONDER1E/tbp.git
 cd tbp
 chmod +x tbp.sh
 chmod +x open_shizuku.sh
-chmod +x exit_helper.sh
+chmod +x control.sh
 ./tbp.sh
 ```
 
