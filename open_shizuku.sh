@@ -3,7 +3,7 @@
 RISH="/data/data/com.termux/files/home/rish"
 SHIZUKU_PKG="moe.shizuku.privileged.api"
 
-# Function to get the current foreground app using your device's specific output
+# Function to get current foreground app
 get_fg_app() {
     $RISH -c "dumpsys activity activities" | grep "mFocusedApp" | sed -n 's/.*u0 \([^/]*\)\/.*/\1/p'
 }
@@ -16,14 +16,21 @@ termux-wifi-enable true
 --user 0 \
 -n moe.shizuku.privileged.api/moe.shizuku.manager.MainActivity > /dev/null 2>&1
 
-# 3. Wait for Shizuku to actually take focus before we start spamming
+# 3. Wait for Shizuku to actually take focus
 while [ "$(get_fg_app)" != "$SHIZUKU_PKG" ]; do
-    echo "retying..."
+    echo "retrying..."
 done
 
-# 4. Spam back button with no delay until Shizuku is no longer in focus
+# 4. Instant double-backspace then spam until gone
+first_run=true
 while [ "$(get_fg_app)" = "$SHIZUKU_PKG" ]; do
-    $RISH -c "input keyevent 4"
+    if [ "$first_run" = true ]; then
+        # Fire twice immediately on the first detection
+        $RISH -c "input keyevent 4 && input keyevent 4"
+        first_run=false
+    else
+        $RISH -c "input keyevent 4"
+    fi
 done
 
 # 5. Clean up
