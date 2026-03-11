@@ -31,22 +31,22 @@ elif [[ "$RESPONSE" == *"Resume Monitor"* ]]; then
 
 elif [[ "$RESPONSE" == *"Exit Monitor"* ]]; then
     echo "User chose to exit"
-
+    
     # Find the monitor PID and kill it
     if [ -f /data/data/com.termux/files/home/tbp/monitor.pid ]; then
         PID=$(cat /data/data/com.termux/files/home/tbp/monitor.pid)
         echo "Found PID: $PID"
-
+        
         # Kill the process and its children
         pkill -P "$PID" 2>/dev/null
         kill "$PID" 2>/dev/null
         sleep 1
-
+        
         # Remove notification and files
         termux-notification-remove 7421
         rm -f /data/data/com.termux/files/home/tbp/monitor.pid
         rm -f "$STATE_FILE"
-
+        
         echo "Monitor terminated"
     else
         echo "PID file not found"
